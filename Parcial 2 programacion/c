@@ -1,0 +1,71 @@
+using System;
+using System.Windows.Forms;
+
+namespace CalculadoraPrestamo
+{
+    public partial class FormCalculadoraPrestamo : Form
+    {
+        public FormCalculadoraPrestamo()
+        {
+            InitializeComponent();
+        }
+
+        private void btnCalcular_Click(object sender, EventArgs e)
+        {
+            if (!ValidarEntradas()) // Validar la entrada del usuario
+                return;
+
+            decimal montoPrestamo = decimal.Parse(txtMontoPrestamo.Text);
+            decimal tasaInteresAnual = decimal.Parse(txtTasaInteres.Text);
+            int plazoPrestamoMeses = int.Parse(txtPlazoPrestamo.Text);
+
+            decimal tasaInteresMensual = tasaInteresAnual / 100 / 12;
+
+            decimal cuota = CalcularCuota(montoPrestamo, tasaInteresMensual, plazoPrestamoMeses);
+            decimal totalIntereses = CalcularTotalIntereses(cuota, plazoPrestamoMeses, montoPrestamo);
+            decimal totalPagar = cuota * plazoPrestamoMeses;
+
+            MostrarResultados(cuota, totalIntereses, totalPagar);
+        }
+
+        private bool ValidarEntradas()
+        {
+            if (!decimal.TryParse(txtMontoPrestamo.Text, out decimal monto) || monto <= 0)
+            {
+                MessageBox.Show("Ingrese un monto de préstamo válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (!decimal.TryParse(txtTasaInteres.Text, out decimal tasa) || tasa <= 0)
+            {
+                MessageBox.Show("Ingrese una tasa de interés válida.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (!int.TryParse(txtPlazoPrestamo.Text, out int plazo) || plazo <= 0)
+            {
+                MessageBox.Show("Ingrese un plazo de préstamo válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private decimal CalcularCuota(decimal montoPrestamo, decimal tasaInteresMensual, int plazoPrestamoMeses)
+        {
+            return (montoPrestamo * tasaInteresMensual) / (1 - (decimal)Math.Pow(1 + (double)tasaInteresMensual, -plazoPrestamoMeses));
+        }
+
+        private decimal CalcularTotalIntereses(decimal cuota, int plazoPrestamoMeses, decimal montoPrestamo)
+        {
+            return cuota * plazoPrestamoMeses - montoPrestamo;
+        }
+
+        private void MostrarResultados(decimal cuota, decimal totalIntereses, decimal totalPagar)
+        {
+            lblCuotaMensual.Text = cuota.ToString("C2");
+            lblTotalIntereses.Text = totalIntereses.ToString("C2");
+            lblTotalPagar.Text = totalPagar.ToString("C2");
+        }
+    }
+}
